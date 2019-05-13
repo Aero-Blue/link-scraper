@@ -1,2 +1,2 @@
-# bitcointalk-scraper
-Scrapes recent page of bitcoin talk for unique links
+# link-scraper
+Scrapes links (a["href"] tags) within a given webpage URL, specific domains / links can be filtered out.
