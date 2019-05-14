@@ -2,35 +2,22 @@ import requests
 from urllib.parse import urlparse
 from bs4 import BeautifulSoup
 import time
+import configparser
+import random
 
 
 class LinkScraper:
-    ua = {
-        "User-Agent": "Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_3) AppleWebKit/537.75.14 (KHTML, like Gecko) Version/7.0.3 Safari/7046A194A"
-    }
-
-    def __init__(self, urls):
-        self.urls = urls
+    def __init__(self):
+        self.ua = {"User-Agent": config["DEFAULT"]["UserAgent"]}
+        self.urls = config["DEFAULT"]["URLs"].split(",\n")
+        self.keys = config["DEFAULT"]["Filters"].split(",\n")
         self.session = requests.Session()
         self.session.headers.update(self.ua)
-        self.links = self.scrape_links(urls)
+        self.links = self.scrape_links(self.urls)
         self.link_count = self.export_links()
 
     def filter_link(self, link):
-        keys = [
-            "bitcointalk.org",
-            "www.simplemachines.org",
-            "bitcoin.org",
-            "w3.org",
-            "www.privateinternetaccess.com",
-            "www.mysql.com",
-            "www.php.net",
-            "www.redditblog.com",
-            "reddit.com",
-            "redditgifts.com",
-            "www.reddithelp.com",
-        ]
-        for key in keys:
+        for key in self.keys:
             if key in link:
                 return False
         if link:
@@ -60,14 +47,22 @@ class LinkScraper:
         return len(links)
 
 
+class Main:
+    def __init__(self):
+        config.read("config.ini")
+        while True:
+            try:
+                self.update_count()
+            except:
+                pass
+
+    def update_count(self):
+        freq = int(config["DEFAULT"]["UpdateFrequency"])
+        link_count = LinkScraper().link_count
+        print("[Links]: {}".format(link_count))
+        time.sleep(freq)
+
+
 if __name__ == "__main__":
-    urls = [
-        "http://bit.ly/2Q1vJk5",
-        "http://bit.ly/2JItFMu",
-    ]  # Shortened for readability
-    while True:
-        try:
-            print("[Links]: {}".format(LinkScraper(urls).link_count))
-            time.sleep(10)
-        except:
-            pass
+    config = configparser.ConfigParser()
+    Main()
